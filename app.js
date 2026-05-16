@@ -239,7 +239,6 @@ const els = {
   jobTitle: document.querySelector("#jobTitle"),
   timeFilter: document.querySelector("#timeFilter"),
   startButton: document.querySelector("#startButton"),
-  openSelectedButton: document.querySelector("#openSelectedButton"),
   advancedToggle: document.querySelector("#advancedToggle"),
   advancedPanel: document.querySelector("#advancedPanel"),
   excludeRemote: document.querySelector("#excludeRemote"),
@@ -249,10 +248,7 @@ const els = {
   boardPicker: document.querySelector("#boardPicker"),
   selectAllBoards: document.querySelector("#selectAllBoards"),
   clearBoards: document.querySelector("#clearBoards"),
-  results: document.querySelector("#results"),
-  resultActions: document.querySelector("#resultActions"),
-  resultSummary: document.querySelector("#resultSummary"),
-  emptyState: document.querySelector("#emptyState"),
+  searchStatus: document.querySelector("#searchStatus"),
   suggestions: document.querySelector("#suggestions"),
   clearButton: document.querySelector("#clearButton"),
   themeToggle: document.querySelector("#themeToggle")
@@ -303,7 +299,7 @@ function populateBoards() {
     checkbox.checked = true;
     checkbox.addEventListener("change", () => {
       syncBoardPreset();
-      if (els.jobTitle.value.trim()) generateList();
+      clearLaunchStatus();
     });
 
     const text = document.createElement("span");
@@ -341,7 +337,7 @@ function applyBoardPreset(preset) {
   if (boardPresets[preset]) {
     setSelectedBoards(boardPresets[preset]);
   }
-  if (els.jobTitle.value.trim()) generateList();
+  clearLaunchStatus();
 }
 
 function rebuildTimeOptions(preferredValue) {
@@ -533,73 +529,11 @@ function renderSuggestions(jobTitles) {
     button.textContent = title;
     button.addEventListener("click", () => {
       els.jobTitle.value = title;
-      generateList();
+      launchSearches();
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
     els.suggestions.append(button);
   });
-}
-
-function buildResultGroup(jobTitle, context) {
-  const group = document.createElement("article");
-  group.className = "result-group";
-
-  const heading = document.createElement("div");
-  heading.className = "result-heading";
-  const h2 = document.createElement("h2");
-  h2.textContent = jobTitle;
-  const meta = document.createElement("div");
-  meta.className = "meta";
-  meta.textContent = [
-    formattedTime(context.timeFilter),
-    context.locationLabel,
-    context.excludeRemote ? "Excluding Remote" : "",
-    `${context.targets.length} boards`
-  ].filter(Boolean).join(" - ");
-  heading.append(h2, meta);
-
-  const list = document.createElement("ul");
-  list.className = "target-list";
-  if (!context.targets.length) {
-    const item = document.createElement("li");
-    item.className = "target-card";
-    const content = document.createElement("div");
-    const message = document.createElement("small");
-    message.textContent = "No job boards selected.";
-    content.append(message);
-    item.append(document.createElement("span"), content);
-    list.append(item);
-  }
-
-  context.targets.forEach(([site, label], index) => {
-    const url = targetUrl(site, jobTitle, context);
-    const item = document.createElement("li");
-    item.className = "target-card";
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = `target-${index}-${jobTitle.replace(/\W+/g, "-")}`;
-    checkbox.setAttribute("aria-label", `Mark ${label} search as checked`);
-
-    const content = document.createElement("div");
-    const link = document.createElement("a");
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = label;
-    link.addEventListener("click", () => {
-      checkbox.checked = true;
-    });
-
-    const small = document.createElement("small");
-    small.textContent = site === "remoterocketship.com" ? "native job board search" : site;
-    content.append(link, small);
-    item.append(checkbox, content);
-    list.append(item);
-  });
-
-  group.append(heading, list);
-  return group;
 }
 
 function getPreparedSearches() {
@@ -629,7 +563,11 @@ function getPreparedSearches() {
   });
 }
 
-function generateList() {
+function clearLaunchStatus() {
+  els.searchStatus.textContent = "";
+}
+
+function launchSearches() {
   const searches = getPreparedSearches();
   if (!searches.length) {
     els.jobTitle.focus();
@@ -639,30 +577,22 @@ function generateList() {
   const jobTitles = searches.map(search => search.originalTitle);
   updateUrl(jobTitles);
   renderSuggestions(jobTitles);
-  els.emptyState.hidden = true;
-  els.resultActions.hidden = false;
-  els.results.innerHTML = "";
-  searches.forEach(search => {
-    els.results.append(buildResultGroup(search.title, search.context));
-  });
   const totalLinks = searches.reduce((sum, search) => sum + search.context.targets.length, 0);
-  els.resultSummary.textContent = `${totalLinks} search links generated`;
-  els.openSelectedButton.disabled = totalLinks === 0;
-}
-
-function openSelectedSearches() {
-  const searches = getPreparedSearches();
-  if (!searches.length) {
-    els.jobTitle.focus();
+  if (!totalLinks) {
+    els.searchStatus.textContent = "Select at least one job board.";
     return;
   }
 
-  generateList();
+  let opened = 0;
   searches.forEach(search => {
     search.context.targets.forEach(([site]) => {
-      window.open(targetUrl(site, search.title, search.context), "_blank", "noopener,noreferrer");
+      const tab = window.open(targetUrl(site, search.title, search.context), "_blank", "noopener,noreferrer");
+      if (tab) opened += 1;
     });
   });
+  els.searchStatus.textContent = opened === totalLinks
+    ? `Opened ${opened} search tabs.`
+    : `Tried to open ${totalLinks} search tabs. Allow popups if some did not open.`;
 }
 
 function toggleAdvanced(forceOpen) {
@@ -678,12 +608,8 @@ function clearAll() {
   els.engineSelect.value = "google";
   setSelectedBoards(boardPresets.all);
   rebuildTimeOptions("24hours");
-  els.results.innerHTML = "";
-  els.resultActions.hidden = true;
-  els.openSelectedButton.disabled = false;
-  els.resultSummary.textContent = "";
   els.suggestions.hidden = true;
-  els.emptyState.hidden = false;
+  clearLaunchStatus();
   history.pushState(null, "", window.location.pathname);
 }
 
@@ -724,7 +650,6 @@ function hydrateFromUrl() {
   const job = params.get("job");
   if (job) {
     els.jobTitle.value = decodeURIComponent(job.replace(/\+/g, " "));
-    generateList();
   }
 }
 
@@ -734,31 +659,26 @@ document.addEventListener("DOMContentLoaded", () => {
   rebuildTimeOptions("24hours");
   hydrateFromUrl();
 
-  els.startButton.addEventListener("click", generateList);
-  els.openSelectedButton.addEventListener("click", openSelectedSearches);
+  els.startButton.addEventListener("click", launchSearches);
   els.jobTitle.addEventListener("keydown", event => {
-    if (event.key === "Enter") generateList();
+    if (event.key === "Enter") launchSearches();
   });
   els.advancedToggle.addEventListener("click", () => toggleAdvanced());
   els.clearButton.addEventListener("click", clearAll);
   [els.excludeRemote, els.locationSelect].forEach(control => {
-    control.addEventListener("change", () => {
-      if (els.jobTitle.value.trim()) generateList();
-    });
+    control.addEventListener("change", clearLaunchStatus);
   });
   els.engineSelect.addEventListener("change", () => {
     rebuildTimeOptions();
-    if (els.jobTitle.value.trim()) generateList();
+    clearLaunchStatus();
   });
   els.boardPreset.addEventListener("change", () => applyBoardPreset(els.boardPreset.value));
   els.selectAllBoards.addEventListener("click", () => applyBoardPreset("all"));
   els.clearBoards.addEventListener("click", () => {
     setSelectedBoards([]);
-    if (els.jobTitle.value.trim()) generateList();
+    clearLaunchStatus();
   });
-  els.timeFilter.addEventListener("change", () => {
-    if (els.jobTitle.value.trim()) generateList();
-  });
+  els.timeFilter.addEventListener("change", clearLaunchStatus);
   els.themeToggle.addEventListener("click", () => {
     document.documentElement.classList.toggle("dark");
     if (els.jobTitle.value.trim()) updateUrl(els.jobTitle.value.split(",").map(title => titleCase(title.trim())).filter(Boolean));
