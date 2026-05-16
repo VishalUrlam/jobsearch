@@ -13,9 +13,7 @@
           <p class="eyebrow">Targeted search generator</p>
           <h1>Job Search Launcher</h1>
         </div>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">
-          <span aria-hidden="true">T</span>
-        </button>
+        <button class="theme-toggle" id="themeToggle" type="button">Dark mode</button>
       </header>
 
       <section class="search-panel" aria-label="Search controls">
@@ -87,12 +85,17 @@
           </div>
         </div>
         <p class="search-status" id="searchStatus" aria-live="polite"></p>
-        <div class="queue-actions" id="queueActions" hidden>
-          <button class="small-button" id="openNextButton" type="button">Open Next</button>
-        </div>
       </section>
 
       <section class="suggestions" id="suggestions" aria-live="polite" hidden></section>
+
+      <section class="results-panel" id="resultsPanel" aria-live="polite" hidden>
+        <div class="results-header">
+          <h2>Selected job boards</h2>
+          <span id="resultSummary"></span>
+        </div>
+        <div class="result-list" id="resultList"></div>
+      </section>
     </main>
 
     <footer class="site-footer">

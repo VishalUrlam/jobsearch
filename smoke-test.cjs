@@ -82,8 +82,9 @@ const ids = [
   "selectAllBoards",
   "clearBoards",
   "searchStatus",
-  "queueActions",
-  "openNextButton",
+  "resultsPanel",
+  "resultSummary",
+  "resultList",
   "suggestions",
   "clearButton",
   "themeToggle"
@@ -167,13 +168,27 @@ if (context.window.opened.length !== 0) {
 }
 
 context.setSelectedBoards(["greenhouse.io", "lever.co"]);
-context.launchSearches();
+context.renderSearchResults();
 
 if (!context.history.pushed.includes("boards=greenhouse.io%2Clever.co")) {
   throw new Error(`Expected selected boards in URL, got ${context.history.pushed}`);
 }
+if (context.window.opened.length !== 0) {
+  throw new Error(`Search should render links without opening tabs, got ${context.window.opened.length}`);
+}
+if (elements.get("resultsPanel").hidden) {
+  throw new Error("Expected results panel to be visible");
+}
+if (elements.get("resultSummary").textContent !== "2 links") {
+  throw new Error(`Expected 2 links summary, got ${elements.get("resultSummary").textContent}`);
+}
+if (elements.get("resultList").children.length !== 2) {
+  throw new Error(`Expected 2 selected board rows, got ${elements.get("resultList").children.length}`);
+}
+const firstButton = elements.get("resultList").children[0].children[1];
+firstButton.listeners.click();
 if (context.window.opened.length !== 1) {
-  throw new Error(`Expected board selection change plus Search setup to leave 1 opened tab before next click, got ${context.window.opened.length}`);
+  throw new Error(`Expected Open link to open one tab, got ${context.window.opened.length}`);
 }
 if (!context.window.opened[0].includes("duckduckgo.com/html/")) {
   throw new Error(`Expected DuckDuckGo URL, got ${context.window.opened[0]}`);
@@ -184,22 +199,13 @@ if (!context.window.opened[0].includes("california")) {
 if (context.window.opened[0].includes("%20remote")) {
   throw new Error(`Remote term should be excluded, got ${context.window.opened[0]}`);
 }
-if (elements.get("searchStatus").textContent !== "Opened 1 of 2. Click Open Next for the next board.") {
-  throw new Error(`Expected opened status, got ${elements.get("searchStatus").textContent}`);
-}
-if (elements.get("queueActions").hidden) {
-  throw new Error("Expected Open Next action to be visible");
-}
 
-elements.get("openNextButton").listeners.click();
-if (context.window.opened.length !== 2) {
-  throw new Error(`Expected Open Next to open second tab, got ${context.window.opened.length}`);
+if (elements.get("themeToggle").textContent !== "Dark mode") {
+  throw new Error(`Expected initial dark mode toggle, got ${elements.get("themeToggle").textContent}`);
 }
-if (elements.get("searchStatus").textContent !== "Opened 2 of 2.") {
-  throw new Error(`Expected complete status, got ${elements.get("searchStatus").textContent}`);
-}
-if (!elements.get("queueActions").hidden) {
-  throw new Error("Expected Open Next action to hide after queue is done");
+elements.get("themeToggle").listeners.click();
+if (elements.get("themeToggle").textContent !== "Light mode") {
+  throw new Error(`Expected light mode toggle after dark mode, got ${elements.get("themeToggle").textContent}`);
 }
 
 console.log("smoke test passed");

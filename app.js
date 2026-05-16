@@ -51,8 +51,6 @@ const boardPresets = {
 };
 
 let boardInputs = [];
-let launchQueue = [];
-let launchTotal = 0;
 
 const countryQueries = {
   "canada": "canada",
@@ -251,8 +249,9 @@ const els = {
   selectAllBoards: document.querySelector("#selectAllBoards"),
   clearBoards: document.querySelector("#clearBoards"),
   searchStatus: document.querySelector("#searchStatus"),
-  queueActions: document.querySelector("#queueActions"),
-  openNextButton: document.querySelector("#openNextButton"),
+  resultsPanel: document.querySelector("#resultsPanel"),
+  resultSummary: document.querySelector("#resultSummary"),
+  resultList: document.querySelector("#resultList"),
   suggestions: document.querySelector("#suggestions"),
   clearButton: document.querySelector("#clearButton"),
   themeToggle: document.querySelector("#themeToggle")
@@ -533,7 +532,7 @@ function renderSuggestions(jobTitles) {
     button.textContent = title;
     button.addEventListener("click", () => {
       els.jobTitle.value = title;
-      launchSearches();
+      renderSearchResults();
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
     els.suggestions.append(button);
@@ -569,54 +568,60 @@ function getPreparedSearches() {
 
 function clearLaunchStatus() {
   els.searchStatus.textContent = "";
-  els.queueActions.hidden = true;
-  launchQueue = [];
-  launchTotal = 0;
+  els.resultsPanel.hidden = true;
+  els.resultList.innerHTML = "";
+  els.resultSummary.textContent = "";
 }
 
-function getSearchUrls(searches) {
-  const urls = [];
+function getSearchRows(searches) {
+  const rows = [];
   searches.forEach(search => {
-    search.context.targets.forEach(([site]) => {
-      urls.push(targetUrl(site, search.title, search.context));
+    search.context.targets.forEach(([site, label]) => {
+      rows.push({
+        label,
+        site,
+        title: search.title,
+        url: targetUrl(site, search.title, search.context)
+      });
     });
   });
-  return urls;
+  return rows;
 }
 
 function openSearchUrl(url) {
   return window.open(url, "_blank", "noopener,noreferrer");
 }
 
-function updateQueueStatus(openedNow) {
-  const openedCount = launchTotal - launchQueue.length;
-  if (launchQueue.length) {
-    els.searchStatus.textContent = openedNow
-      ? `Opened ${openedCount} of ${launchTotal}. Click Open Next for the next board.`
-      : `The browser blocked that tab. Allow popups, then click Open Next.`;
-    els.queueActions.hidden = false;
-    return;
-  }
+function renderResultRow(row) {
+  const item = document.createElement("article");
+  item.className = "result-row";
 
-  els.searchStatus.textContent = openedNow
-    ? `Opened ${openedCount} of ${launchTotal}.`
-    : "The browser blocked that tab. Allow popups, then search again.";
-  els.queueActions.hidden = true;
+  const main = document.createElement("div");
+  main.className = "result-main";
+
+  const title = document.createElement("strong");
+  title.textContent = row.label;
+
+  const details = document.createElement("small");
+  details.textContent = `${row.title} - ${row.site}`;
+
+  const action = document.createElement("button");
+  action.className = "open-link-button";
+  action.type = "button";
+  action.textContent = "Open link";
+  action.addEventListener("click", () => {
+    openSearchUrl(row.url);
+  });
+
+  main.append(title, details);
+  item.append(main, action);
+  return item;
 }
 
-function openNextSearch() {
-  const nextUrl = launchQueue.shift();
-  if (!nextUrl) {
-    updateQueueStatus(true);
-    return;
-  }
-  const opened = Boolean(openSearchUrl(nextUrl));
-  updateQueueStatus(opened);
-}
-
-function launchSearches() {
+function renderSearchResults() {
   const searches = getPreparedSearches();
   if (!searches.length) {
+    clearLaunchStatus();
     els.jobTitle.focus();
     return;
   }
@@ -624,17 +629,21 @@ function launchSearches() {
   const jobTitles = searches.map(search => search.originalTitle);
   updateUrl(jobTitles);
   renderSuggestions(jobTitles);
-  const urls = getSearchUrls(searches);
-  if (!urls.length) {
+  const rows = getSearchRows(searches);
+  els.resultList.innerHTML = "";
+  els.resultSummary.textContent = "";
+  if (!rows.length) {
     els.searchStatus.textContent = "Select at least one job board.";
-    els.queueActions.hidden = true;
+    els.resultsPanel.hidden = true;
     return;
   }
 
-  launchTotal = urls.length;
-  launchQueue = urls.slice(1);
-  const opened = Boolean(openSearchUrl(urls[0]));
-  updateQueueStatus(opened);
+  els.searchStatus.textContent = "";
+  els.resultsPanel.hidden = false;
+  els.resultSummary.textContent = `${rows.length} links`;
+  rows.forEach(row => {
+    els.resultList.append(renderResultRow(row));
+  });
 }
 
 function toggleAdvanced(forceOpen) {
@@ -695,16 +704,22 @@ function hydrateFromUrl() {
   }
 }
 
+function updateThemeToggle() {
+  const isDark = document.documentElement.classList.contains("dark");
+  els.themeToggle.textContent = isDark ? "Light mode" : "Dark mode";
+  els.themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   populateLocations();
   populateBoards();
   rebuildTimeOptions("24hours");
   hydrateFromUrl();
+  updateThemeToggle();
 
-  els.startButton.addEventListener("click", launchSearches);
-  els.openNextButton.addEventListener("click", openNextSearch);
+  els.startButton.addEventListener("click", renderSearchResults);
   els.jobTitle.addEventListener("keydown", event => {
-    if (event.key === "Enter") launchSearches();
+    if (event.key === "Enter") renderSearchResults();
   });
   els.advancedToggle.addEventListener("click", () => toggleAdvanced());
   els.clearButton.addEventListener("click", clearAll);
@@ -724,6 +739,7 @@ document.addEventListener("DOMContentLoaded", () => {
   els.timeFilter.addEventListener("change", clearLaunchStatus);
   els.themeToggle.addEventListener("click", () => {
     document.documentElement.classList.toggle("dark");
+    updateThemeToggle();
     if (els.jobTitle.value.trim()) updateUrl(els.jobTitle.value.split(",").map(title => titleCase(title.trim())).filter(Boolean));
   });
 });
