@@ -17,6 +17,11 @@ class FakeElement {
     this.rel = "";
     this.href = "";
     this.target = "";
+    this.classList = {
+      values: new Set(),
+      add: value => this.classList.values.add(value),
+      contains: value => this.classList.values.has(value)
+    };
   }
 
   set innerHTML(_value) {
@@ -189,6 +194,12 @@ const firstButton = elements.get("resultList").children[0].children[1];
 firstButton.listeners.click();
 if (context.window.opened.length !== 1) {
   throw new Error(`Expected Open link to open one tab, got ${context.window.opened.length}`);
+}
+if (firstButton.textContent !== "Opened") {
+  throw new Error(`Expected opened button label, got ${firstButton.textContent}`);
+}
+if (!firstButton.classList.contains("is-opened")) {
+  throw new Error("Expected opened button cue class");
 }
 if (!context.window.opened[0].includes("duckduckgo.com/html/")) {
   throw new Error(`Expected DuckDuckGo URL, got ${context.window.opened[0]}`);

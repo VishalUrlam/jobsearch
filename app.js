@@ -611,6 +611,9 @@ function renderResultRow(row) {
   action.textContent = "Open link";
   action.addEventListener("click", () => {
     openSearchUrl(row.url);
+    action.textContent = "Opened";
+    action.classList.add("is-opened");
+    action.setAttribute("aria-pressed", "true");
   });
 
   main.append(title, details);

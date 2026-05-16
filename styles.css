@@ -107,7 +107,7 @@ h1 {
 
 .primary-controls {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) minmax(180px, 240px) auto;
+  grid-template-columns: minmax(240px, 1fr) minmax(180px, 240px);
   gap: 12px;
   align-items: end;
 }
@@ -215,6 +215,11 @@ select:focus {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.board-footer {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .small-button {
@@ -407,6 +412,12 @@ select:focus {
   color: #082018;
 }
 
+.open-link-button.is-opened {
+  border-color: var(--line);
+  background: var(--panel-strong);
+  color: var(--muted);
+}
+
 .site-footer {
   width: min(980px, calc(100% - 32px));
   margin: 0 auto;
@@ -441,6 +452,10 @@ select:focus {
 
   .start-button {
     width: 100%;
+  }
+
+  .board-footer {
+    justify-content: stretch;
   }
 
   .results-header,

@@ -28,15 +28,14 @@
             <select id="timeFilter"></select>
           </label>
 
-          <button class="start-button" id="startButton" type="button">Search</button>
         </div>
 
         <div class="advanced-row">
-          <button class="link-button" id="advancedToggle" type="button">Advanced Search</button>
+          <button class="link-button" id="advancedToggle" type="button">Simple Search</button>
           <button class="link-button muted" id="clearButton" type="button">Clear</button>
         </div>
 
-        <div class="advanced-panel" id="advancedPanel" hidden>
+        <div class="advanced-panel" id="advancedPanel">
           <label class="switch-row">
             <span>Exclude Remote Jobs</span>
             <input id="excludeRemote" type="checkbox">
@@ -82,6 +81,9 @@
               </div>
             </div>
             <div class="board-picker" id="boardPicker" role="group" aria-label="Choose job boards"></div>
+            <div class="board-footer">
+              <button class="start-button" id="startButton" type="button">Search</button>
+            </div>
           </div>
         </div>
         <p class="search-status" id="searchStatus" aria-live="polite"></p>
