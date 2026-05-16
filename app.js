@@ -239,7 +239,6 @@ const els = {
   jobTitle: document.querySelector("#jobTitle"),
   timeFilter: document.querySelector("#timeFilter"),
   startButton: document.querySelector("#startButton"),
-  advancedToggle: document.querySelector("#advancedToggle"),
   advancedPanel: document.querySelector("#advancedPanel"),
   excludeRemote: document.querySelector("#excludeRemote"),
   locationSelect: document.querySelector("#locationSelect"),
@@ -254,7 +253,9 @@ const els = {
   resultList: document.querySelector("#resultList"),
   suggestions: document.querySelector("#suggestions"),
   clearButton: document.querySelector("#clearButton"),
-  themeToggle: document.querySelector("#themeToggle")
+  themeToggle: document.querySelector("#themeToggle"),
+  sunIcon: document.querySelector(".sun-icon"),
+  moonIcon: document.querySelector(".moon-icon")
 };
 
 function titleCase(value) {
@@ -653,12 +654,6 @@ function renderSearchResults() {
   }, 100);
 }
 
-function toggleAdvanced(forceOpen) {
-  const shouldOpen = typeof forceOpen === "boolean" ? forceOpen : els.advancedPanel.hidden;
-  els.advancedPanel.hidden = !shouldOpen;
-  els.advancedToggle.textContent = shouldOpen ? "Simple Search" : "Advanced Search";
-}
-
 function clearAll() {
   els.jobTitle.value = "";
   els.excludeRemote.checked = false;
@@ -676,19 +671,16 @@ function hydrateFromUrl() {
   const engine = params.get("engine");
   if (engine && timeOptionSets[engine]) {
     els.engineSelect.value = engine;
-    toggleAdvanced(true);
   }
   rebuildTimeOptions(params.get("time") || "24hours");
 
   const location = params.get("location");
   if (location && countryQueries[location]) {
     els.locationSelect.value = location;
-    toggleAdvanced(true);
   }
 
   if (params.get("remote") === "false") {
     els.excludeRemote.checked = true;
-    toggleAdvanced(true);
   }
 
   if (params.get("mode") === "dark") {
@@ -698,11 +690,9 @@ function hydrateFromUrl() {
   const boards = params.get("boards");
   if (boards === "none") {
     setSelectedBoards([]);
-    toggleAdvanced(true);
   } else if (boards) {
     const allowed = new Set(targetSites.map(([site]) => site));
     setSelectedBoards(boards.split(",").filter(site => allowed.has(site)));
-    toggleAdvanced(true);
   }
 
   const job = params.get("job");
@@ -713,7 +703,13 @@ function hydrateFromUrl() {
 
 function updateThemeToggle() {
   const isDark = document.documentElement.classList.contains("dark");
-  els.themeToggle.textContent = isDark ? "Light mode" : "Dark mode";
+  if (isDark) {
+    els.sunIcon.style.display = "none";
+    els.moonIcon.style.display = "block";
+  } else {
+    els.sunIcon.style.display = "block";
+    els.moonIcon.style.display = "none";
+  }
   els.themeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
 }
 
@@ -728,7 +724,6 @@ document.addEventListener("DOMContentLoaded", () => {
   els.jobTitle.addEventListener("keydown", event => {
     if (event.key === "Enter") renderSearchResults();
   });
-  els.advancedToggle.addEventListener("click", () => toggleAdvanced());
   els.clearButton.addEventListener("click", clearAll);
   [els.excludeRemote, els.locationSelect].forEach(control => {
     control.addEventListener("change", clearLaunchStatus);
