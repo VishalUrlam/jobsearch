@@ -237,6 +237,7 @@ const timeOptionSets = {
 
 const els = {
   jobTitle: document.querySelector("#jobTitle"),
+  jobTitleError: document.querySelector("#jobTitleError"),
   timeFilter: document.querySelector("#timeFilter"),
   startButton: document.querySelector("#startButton"),
   advancedPanel: document.querySelector("#advancedPanel"),
@@ -631,10 +632,11 @@ function renderSearchResults() {
   const searches = getPreparedSearches();
   if (!searches.length) {
     clearLaunchStatus();
-    els.searchStatus.textContent = "Please enter a job title.";
+    els.jobTitleError.hidden = false;
     els.jobTitle.focus();
     return;
   }
+  els.jobTitleError.hidden = true;
 
   const jobTitles = searches.map(search => search.originalTitle);
   updateUrl(jobTitles);
@@ -726,6 +728,9 @@ document.addEventListener("DOMContentLoaded", () => {
   els.startButton.addEventListener("click", renderSearchResults);
   els.jobTitle.addEventListener("keydown", event => {
     if (event.key === "Enter") renderSearchResults();
+  });
+  els.jobTitle.addEventListener("input", () => {
+    els.jobTitleError.hidden = true;
   });
   els.clearButton.addEventListener("click", clearAll);
   [els.excludeRemote, els.locationSelect].forEach(control => {
