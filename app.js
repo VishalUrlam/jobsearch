@@ -647,6 +647,10 @@ function renderSearchResults() {
   rows.forEach(row => {
     els.resultList.append(renderResultRow(row));
   });
+  
+  setTimeout(() => {
+    els.resultsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 100);
 }
 
 function toggleAdvanced(forceOpen) {
