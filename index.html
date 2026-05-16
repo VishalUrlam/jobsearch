@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Job Search Launcher</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">Targeted search generator</p>
+          <h1>Job Search Launcher</h1>
+        </div>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+          <span aria-hidden="true">T</span>
+        </button>
+      </header>
+
+      <section class="search-panel" aria-label="Search controls">
+        <div class="primary-controls">
+          <label class="field wide">
+            <span>Job Title</span>
+            <input id="jobTitle" type="text" autocomplete="off" placeholder="Software engineer, product manager">
+          </label>
+
+          <label class="field">
+            <span>Time Filter</span>
+            <select id="timeFilter"></select>
+          </label>
+
+          <div class="launch-actions">
+            <button class="start-button" id="startButton" type="button">
+              <span aria-hidden="true">Go</span>
+              <span>Start</span>
+            </button>
+            <button class="open-button" id="openSelectedButton" type="button">
+              <span>Open Selected</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="advanced-row">
+          <button class="link-button" id="advancedToggle" type="button">Advanced Search</button>
+          <button class="link-button muted" id="clearButton" type="button">Clear</button>
+        </div>
+
+        <div class="advanced-panel" id="advancedPanel" hidden>
+          <label class="switch-row">
+            <span>Exclude Remote Jobs</span>
+            <input id="excludeRemote" type="checkbox">
+            <span class="switch" aria-hidden="true"></span>
+          </label>
+
+          <label class="field">
+            <span>Location</span>
+            <select id="locationSelect"></select>
+          </label>
+
+          <label class="field">
+            <span>Search Engine</span>
+            <select id="engineSelect">
+              <option value="google">Google</option>
+              <option value="duckduckgo">DuckDuckGo</option>
+              <option value="bing">Bing</option>
+              <option value="yahoo">Yahoo</option>
+              <option value="kagi">Kagi</option>
+              <option value="qwant">Qwant</option>
+              <option value="brave">Brave</option>
+              <option value="startpage">Startpage</option>
+            </select>
+          </label>
+
+          <div class="board-panel">
+            <div class="board-header">
+              <label class="field">
+                <span>Job Boards</span>
+                <select id="boardPreset">
+                  <option value="all">All Boards</option>
+                  <option value="popular">Popular Boards</option>
+                  <option value="ats">ATS Platforms</option>
+                  <option value="startup">Startup Boards</option>
+                  <option value="company">Company Pages</option>
+                  <option value="enterprise">Enterprise HR</option>
+                  <option value="custom" hidden>Custom Selection</option>
+                </select>
+              </label>
+              <div class="board-actions" aria-label="Job board actions">
+                <button class="small-button" id="selectAllBoards" type="button">Select All</button>
+                <button class="small-button" id="clearBoards" type="button">None</button>
+              </div>
+            </div>
+            <div class="board-picker" id="boardPicker" role="group" aria-label="Choose job boards"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="suggestions" id="suggestions" aria-live="polite" hidden></section>
+
+      <section class="results-shell" aria-live="polite">
+        <div class="empty-state" id="emptyState">
+          <div class="search-mark" aria-hidden="true"></div>
+          <p>Enter a title and launch a set of focused job searches.</p>
+        </div>
+        <div id="results"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Recreated as a local, static job-search query builder.</span>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
