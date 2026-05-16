@@ -283,6 +283,7 @@ function populateLocations() {
   divider.disabled = true;
   els.locationSelect.append(divider);
   states.sort().forEach(state => els.locationSelect.append(new Option(labelCase(state), state)));
+  els.locationSelect.value = "usa";
 }
 
 function boardInputId(site) {
@@ -502,7 +503,13 @@ function updateUrl(jobTitles) {
   params.set("time", els.timeFilter.value);
   params.set("campaign", jobTitles.join(","));
   els.excludeRemote.checked ? params.set("remote", "false") : params.delete("remote");
-  els.locationSelect.value ? params.set("location", els.locationSelect.value) : params.delete("location");
+  if (els.locationSelect.value === "usa") {
+    params.delete("location");
+  } else if (els.locationSelect.value) {
+    params.set("location", els.locationSelect.value);
+  } else {
+    params.set("location", "any");
+  }
   if (selectedBoards.length === targetSites.length) {
     params.delete("boards");
   } else if (selectedBoards.length) {
@@ -655,7 +662,7 @@ function renderSearchResults() {
 function clearAll() {
   els.jobTitle.value = "";
   els.excludeRemote.checked = false;
-  els.locationSelect.value = "";
+  els.locationSelect.value = "usa";
   setSelectedBoards(boardPresets.all);
   rebuildTimeOptions("24hours");
   els.suggestions.hidden = true;
@@ -668,7 +675,9 @@ function hydrateFromUrl() {
   rebuildTimeOptions(params.get("time") || "24hours");
 
   const location = params.get("location");
-  if (location && countryQueries[location]) {
+  if (location === "any") {
+    els.locationSelect.value = "";
+  } else if (location && countryQueries[location]) {
     els.locationSelect.value = location;
   }
 
