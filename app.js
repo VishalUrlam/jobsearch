@@ -242,7 +242,6 @@ const els = {
   advancedPanel: document.querySelector("#advancedPanel"),
   excludeRemote: document.querySelector("#excludeRemote"),
   locationSelect: document.querySelector("#locationSelect"),
-  engineSelect: document.querySelector("#engineSelect"),
   boardPreset: document.querySelector("#boardPreset"),
   boardPicker: document.querySelector("#boardPicker"),
   selectAllBoards: document.querySelector("#selectAllBoards"),
@@ -345,7 +344,7 @@ function applyBoardPreset(preset) {
 }
 
 function rebuildTimeOptions(preferredValue) {
-  const engine = els.engineSelect.value;
+  const engine = "google";
   const options = timeOptionSets[engine] || timeOptionSets.google;
   const current = preferredValue || els.timeFilter.value || "24hours";
   els.timeFilter.innerHTML = "";
@@ -504,7 +503,6 @@ function updateUrl(jobTitles) {
   params.set("campaign", jobTitles.join(","));
   els.excludeRemote.checked ? params.set("remote", "false") : params.delete("remote");
   els.locationSelect.value ? params.set("location", els.locationSelect.value) : params.delete("location");
-  els.engineSelect.value !== "google" ? params.set("engine", els.engineSelect.value) : params.delete("engine");
   if (selectedBoards.length === targetSites.length) {
     params.delete("boards");
   } else if (selectedBoards.length) {
@@ -557,7 +555,7 @@ function getPreparedSearches() {
       originalTitle,
       context: {
         timeFilter: els.timeFilter.value,
-        engine: els.engineSelect.value,
+        engine: "google",
         excludeRemote: els.excludeRemote.checked || suffixExcludesRemote,
         locationQuery: detected.query,
         locationLabel: detected.label,
@@ -658,7 +656,6 @@ function clearAll() {
   els.jobTitle.value = "";
   els.excludeRemote.checked = false;
   els.locationSelect.value = "";
-  els.engineSelect.value = "google";
   setSelectedBoards(boardPresets.all);
   rebuildTimeOptions("24hours");
   els.suggestions.hidden = true;
@@ -668,10 +665,6 @@ function clearAll() {
 
 function hydrateFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const engine = params.get("engine");
-  if (engine && timeOptionSets[engine]) {
-    els.engineSelect.value = engine;
-  }
   rebuildTimeOptions(params.get("time") || "24hours");
 
   const location = params.get("location");
@@ -727,10 +720,6 @@ document.addEventListener("DOMContentLoaded", () => {
   els.clearButton.addEventListener("click", clearAll);
   [els.excludeRemote, els.locationSelect].forEach(control => {
     control.addEventListener("change", clearLaunchStatus);
-  });
-  els.engineSelect.addEventListener("change", () => {
-    rebuildTimeOptions();
-    clearLaunchStatus();
   });
   els.boardPreset.addEventListener("change", () => applyBoardPreset(els.boardPreset.value));
   els.selectAllBoards.addEventListener("click", () => applyBoardPreset("all"));
