@@ -279,12 +279,6 @@ input[type="text"]:focus, select:focus {
   padding-top: 8px;
 }
 
-.board-header {
-  display: grid;
-  grid-template-columns: minmax(220px, 320px) auto;
-  gap: 16px;
-  align-items: end;
-}
 
 .board-actions {
   display: flex;
@@ -359,12 +353,29 @@ input[type="text"]:focus, select:focus {
 }
 
 .switch-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas: "label label" "input switch";
-  gap: 10px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: 10px;
   cursor: pointer;
+}
+
+.switch-row.bordered {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0 16px;
+  height: 48px;
+  background: rgba(255,255,255,0.4);
+  transition: all 0.2s ease;
+}
+
+:root.dark .switch-row.bordered {
+  background: rgba(0,0,0,0.2);
+}
+
+.switch-row.bordered:hover {
+  border-color: var(--accent);
+  background: var(--panel);
 }
 
 .switch-row span:first-child { grid-area: label; }

@@ -37,7 +37,7 @@
         </div>
 
         <div class="advanced-panel" id="advancedPanel">
-          <label class="switch-row">
+          <label class="switch-row bordered">
             <span>Exclude Remote Jobs</span>
             <input id="excludeRemote" type="checkbox">
             <span class="switch" aria-hidden="true"></span>
@@ -49,24 +49,23 @@
           </label>
 
 
+          <label class="field">
+            <span>Job Boards</span>
+            <select id="boardPreset">
+              <option value="all">All Boards</option>
+              <option value="popular">Popular Boards</option>
+              <option value="ats">ATS Platforms</option>
+              <option value="startup">Startup Boards</option>
+              <option value="company">Company Pages</option>
+              <option value="enterprise">Enterprise HR</option>
+              <option value="custom" hidden>Custom Selection</option>
+            </select>
+          </label>
+
           <div class="board-panel">
-            <div class="board-header">
-              <label class="field">
-                <span>Job Boards</span>
-                <select id="boardPreset">
-                  <option value="all">All Boards</option>
-                  <option value="popular">Popular Boards</option>
-                  <option value="ats">ATS Platforms</option>
-                  <option value="startup">Startup Boards</option>
-                  <option value="company">Company Pages</option>
-                  <option value="enterprise">Enterprise HR</option>
-                  <option value="custom" hidden>Custom Selection</option>
-                </select>
-              </label>
-              <div class="board-actions" aria-label="Job board actions">
-                <button class="small-button" id="selectAllBoards" type="button">Select All</button>
-                <button class="small-button" id="clearBoards" type="button">Clear</button>
-              </div>
+            <div class="board-actions" aria-label="Job board actions">
+              <button class="small-button" id="selectAllBoards" type="button">Select All</button>
+              <button class="small-button" id="clearBoards" type="button">Clear</button>
             </div>
             <div class="board-picker" id="boardPicker" role="group" aria-label="Choose job boards"></div>
           </div>
@@ -91,7 +90,7 @@
     </main>
 
     <footer class="site-footer">
-      <span>Recreated as a local, static job-search query builder.</span>
+      <span>Recreated as a local, static job-search query builder. Built with ❤️ by Vishal Urlam</span>
     </footer>
 
     <script src="./app.js"></script>
