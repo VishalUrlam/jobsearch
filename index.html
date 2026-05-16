@@ -30,15 +30,7 @@
             <select id="timeFilter"></select>
           </label>
 
-          <div class="launch-actions">
-            <button class="start-button" id="startButton" type="button">
-              <span aria-hidden="true">Go</span>
-              <span>Start</span>
-            </button>
-            <button class="open-button" id="openSelectedButton" type="button">
-              <span>Open Selected</span>
-            </button>
-          </div>
+          <button class="start-button" id="startButton" type="button">Search</button>
         </div>
 
         <div class="advanced-row">
@@ -102,6 +94,10 @@
         <div class="empty-state" id="emptyState">
           <div class="search-mark" aria-hidden="true"></div>
           <p>Enter a title and launch a set of focused job searches.</p>
+        </div>
+        <div class="results-toolbar" id="resultActions" hidden>
+          <span id="resultSummary"></span>
+          <button class="open-button" id="openSelectedButton" type="button">Open all shown links</button>
         </div>
         <div id="results"></div>
       </section>

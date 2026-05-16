@@ -115,12 +115,6 @@ h1 {
   align-items: end;
 }
 
-.launch-actions {
-  display: flex;
-  gap: 8px;
-  align-items: end;
-}
-
 .field {
   display: grid;
   gap: 6px;
@@ -182,6 +176,11 @@ select:focus {
 
 .open-button:hover {
   border-color: var(--accent);
+}
+
+.open-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .advanced-row {
@@ -348,6 +347,24 @@ select:focus {
   margin-top: 18px;
 }
 
+.results-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-strong);
+}
+
+.results-toolbar span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
 .empty-state {
   min-height: 240px;
   display: grid;
@@ -483,14 +500,14 @@ select:focus {
     width: 100%;
   }
 
-  .launch-actions,
   .start-button,
   .open-button {
     width: 100%;
   }
 
-  .launch-actions {
+  .results-toolbar {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .target-list {

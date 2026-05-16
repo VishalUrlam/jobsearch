@@ -250,6 +250,8 @@ const els = {
   selectAllBoards: document.querySelector("#selectAllBoards"),
   clearBoards: document.querySelector("#clearBoards"),
   results: document.querySelector("#results"),
+  resultActions: document.querySelector("#resultActions"),
+  resultSummary: document.querySelector("#resultSummary"),
   emptyState: document.querySelector("#emptyState"),
   suggestions: document.querySelector("#suggestions"),
   clearButton: document.querySelector("#clearButton"),
@@ -577,7 +579,7 @@ function buildResultGroup(jobTitle, context) {
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.id = `target-${index}-${jobTitle.replace(/\W+/g, "-")}`;
-    checkbox.addEventListener("click", () => window.open(url, "_blank", "noopener,noreferrer"));
+    checkbox.setAttribute("aria-label", `Mark ${label} search as checked`);
 
     const content = document.createElement("div");
     const link = document.createElement("a");
@@ -638,10 +640,14 @@ function generateList() {
   updateUrl(jobTitles);
   renderSuggestions(jobTitles);
   els.emptyState.hidden = true;
+  els.resultActions.hidden = false;
   els.results.innerHTML = "";
   searches.forEach(search => {
     els.results.append(buildResultGroup(search.title, search.context));
   });
+  const totalLinks = searches.reduce((sum, search) => sum + search.context.targets.length, 0);
+  els.resultSummary.textContent = `${totalLinks} search links generated`;
+  els.openSelectedButton.disabled = totalLinks === 0;
 }
 
 function openSelectedSearches() {
@@ -673,6 +679,9 @@ function clearAll() {
   setSelectedBoards(boardPresets.all);
   rebuildTimeOptions("24hours");
   els.results.innerHTML = "";
+  els.resultActions.hidden = true;
+  els.openSelectedButton.disabled = false;
+  els.resultSummary.textContent = "";
   els.suggestions.hidden = true;
   els.emptyState.hidden = false;
   history.pushState(null, "", window.location.pathname);
