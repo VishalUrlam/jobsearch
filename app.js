@@ -631,6 +631,7 @@ function renderSearchResults() {
   const searches = getPreparedSearches();
   if (!searches.length) {
     clearLaunchStatus();
+    els.searchStatus.textContent = "Please enter a job title.";
     els.jobTitle.focus();
     return;
   }
