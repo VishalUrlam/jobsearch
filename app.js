@@ -583,12 +583,24 @@ function launchSearches() {
     return;
   }
 
-  let opened = 0;
+  const urls = [];
   searches.forEach(search => {
     search.context.targets.forEach(([site]) => {
-      const tab = window.open(targetUrl(site, search.title, search.context), "_blank", "noopener,noreferrer");
-      if (tab) opened += 1;
+      urls.push(targetUrl(site, search.title, search.context));
     });
+  });
+
+  const tabs = urls.map(() => window.open("about:blank", "_blank"));
+  let opened = 0;
+  tabs.forEach((tab, index) => {
+    if (!tab) return;
+    opened += 1;
+    tab.opener = null;
+    if (tab.location && typeof tab.location.replace === "function") {
+      tab.location.replace(urls[index]);
+    } else {
+      tab.location = urls[index];
+    }
   });
   els.searchStatus.textContent = opened === totalLinks
     ? `Opened ${opened} search tabs.`

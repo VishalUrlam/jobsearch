@@ -136,9 +136,18 @@ const context = {
   window: {
     location: { search: "", pathname: "/index.html" },
     opened: [],
+    navigated: [],
     open(url) {
       this.opened.push(url);
-      return {};
+      const windowRef = {
+        opener: {},
+        location: {
+          replace: nextUrl => {
+            this.navigated.push(nextUrl);
+          }
+        }
+      };
+      return windowRef;
     },
     scrollTo() {}
   },
@@ -173,14 +182,20 @@ if (!context.history.pushed.includes("boards=greenhouse.io%2Clever.co")) {
 if (context.window.opened.length !== 2) {
   throw new Error(`Expected Search to open 2 tabs, got ${context.window.opened.length}`);
 }
-if (!context.window.opened[0].includes("duckduckgo.com/html/")) {
-  throw new Error(`Expected DuckDuckGo URL, got ${context.window.opened[0]}`);
+if (!context.window.opened.every(url => url === "about:blank")) {
+  throw new Error(`Expected placeholder tabs first, got ${context.window.opened.join(", ")}`);
 }
-if (!context.window.opened[0].includes("california")) {
-  throw new Error(`Expected location in URL, got ${context.window.opened[0]}`);
+if (context.window.navigated.length !== 2) {
+  throw new Error(`Expected Search to navigate 2 tabs, got ${context.window.navigated.length}`);
 }
-if (context.window.opened[0].includes("%20remote")) {
-  throw new Error(`Remote term should be excluded, got ${context.window.opened[0]}`);
+if (!context.window.navigated[0].includes("duckduckgo.com/html/")) {
+  throw new Error(`Expected DuckDuckGo URL, got ${context.window.navigated[0]}`);
+}
+if (!context.window.navigated[0].includes("california")) {
+  throw new Error(`Expected location in URL, got ${context.window.navigated[0]}`);
+}
+if (context.window.navigated[0].includes("%20remote")) {
+  throw new Error(`Remote term should be excluded, got ${context.window.navigated[0]}`);
 }
 if (elements.get("searchStatus").textContent !== "Opened 2 search tabs.") {
   throw new Error(`Expected opened status, got ${elements.get("searchStatus").textContent}`);
