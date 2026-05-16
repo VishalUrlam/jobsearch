@@ -82,6 +82,8 @@ const ids = [
   "selectAllBoards",
   "clearBoards",
   "searchStatus",
+  "queueActions",
+  "openNextButton",
   "suggestions",
   "clearButton",
   "themeToggle"
@@ -136,18 +138,9 @@ const context = {
   window: {
     location: { search: "", pathname: "/index.html" },
     opened: [],
-    navigated: [],
     open(url) {
       this.opened.push(url);
-      const windowRef = {
-        opener: {},
-        location: {
-          replace: nextUrl => {
-            this.navigated.push(nextUrl);
-          }
-        }
-      };
-      return windowRef;
+      return {};
     },
     scrollTo() {}
   },
@@ -179,26 +172,34 @@ context.launchSearches();
 if (!context.history.pushed.includes("boards=greenhouse.io%2Clever.co")) {
   throw new Error(`Expected selected boards in URL, got ${context.history.pushed}`);
 }
-if (context.window.opened.length !== 2) {
-  throw new Error(`Expected Search to open 2 tabs, got ${context.window.opened.length}`);
+if (context.window.opened.length !== 1) {
+  throw new Error(`Expected board selection change plus Search setup to leave 1 opened tab before next click, got ${context.window.opened.length}`);
 }
-if (!context.window.opened.every(url => url === "about:blank")) {
-  throw new Error(`Expected placeholder tabs first, got ${context.window.opened.join(", ")}`);
+if (!context.window.opened[0].includes("duckduckgo.com/html/")) {
+  throw new Error(`Expected DuckDuckGo URL, got ${context.window.opened[0]}`);
 }
-if (context.window.navigated.length !== 2) {
-  throw new Error(`Expected Search to navigate 2 tabs, got ${context.window.navigated.length}`);
+if (!context.window.opened[0].includes("california")) {
+  throw new Error(`Expected location in URL, got ${context.window.opened[0]}`);
 }
-if (!context.window.navigated[0].includes("duckduckgo.com/html/")) {
-  throw new Error(`Expected DuckDuckGo URL, got ${context.window.navigated[0]}`);
+if (context.window.opened[0].includes("%20remote")) {
+  throw new Error(`Remote term should be excluded, got ${context.window.opened[0]}`);
 }
-if (!context.window.navigated[0].includes("california")) {
-  throw new Error(`Expected location in URL, got ${context.window.navigated[0]}`);
-}
-if (context.window.navigated[0].includes("%20remote")) {
-  throw new Error(`Remote term should be excluded, got ${context.window.navigated[0]}`);
-}
-if (elements.get("searchStatus").textContent !== "Opened 2 search tabs.") {
+if (elements.get("searchStatus").textContent !== "Opened 1 of 2. Click Open Next for the next board.") {
   throw new Error(`Expected opened status, got ${elements.get("searchStatus").textContent}`);
+}
+if (elements.get("queueActions").hidden) {
+  throw new Error("Expected Open Next action to be visible");
+}
+
+elements.get("openNextButton").listeners.click();
+if (context.window.opened.length !== 2) {
+  throw new Error(`Expected Open Next to open second tab, got ${context.window.opened.length}`);
+}
+if (elements.get("searchStatus").textContent !== "Opened 2 of 2.") {
+  throw new Error(`Expected complete status, got ${elements.get("searchStatus").textContent}`);
+}
+if (!elements.get("queueActions").hidden) {
+  throw new Error("Expected Open Next action to hide after queue is done");
 }
 
 console.log("smoke test passed");

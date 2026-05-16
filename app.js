@@ -51,6 +51,8 @@ const boardPresets = {
 };
 
 let boardInputs = [];
+let launchQueue = [];
+let launchTotal = 0;
 
 const countryQueries = {
   "canada": "canada",
@@ -249,6 +251,8 @@ const els = {
   selectAllBoards: document.querySelector("#selectAllBoards"),
   clearBoards: document.querySelector("#clearBoards"),
   searchStatus: document.querySelector("#searchStatus"),
+  queueActions: document.querySelector("#queueActions"),
+  openNextButton: document.querySelector("#openNextButton"),
   suggestions: document.querySelector("#suggestions"),
   clearButton: document.querySelector("#clearButton"),
   themeToggle: document.querySelector("#themeToggle")
@@ -565,6 +569,49 @@ function getPreparedSearches() {
 
 function clearLaunchStatus() {
   els.searchStatus.textContent = "";
+  els.queueActions.hidden = true;
+  launchQueue = [];
+  launchTotal = 0;
+}
+
+function getSearchUrls(searches) {
+  const urls = [];
+  searches.forEach(search => {
+    search.context.targets.forEach(([site]) => {
+      urls.push(targetUrl(site, search.title, search.context));
+    });
+  });
+  return urls;
+}
+
+function openSearchUrl(url) {
+  return window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function updateQueueStatus(openedNow) {
+  const openedCount = launchTotal - launchQueue.length;
+  if (launchQueue.length) {
+    els.searchStatus.textContent = openedNow
+      ? `Opened ${openedCount} of ${launchTotal}. Click Open Next for the next board.`
+      : `The browser blocked that tab. Allow popups, then click Open Next.`;
+    els.queueActions.hidden = false;
+    return;
+  }
+
+  els.searchStatus.textContent = openedNow
+    ? `Opened ${openedCount} of ${launchTotal}.`
+    : "The browser blocked that tab. Allow popups, then search again.";
+  els.queueActions.hidden = true;
+}
+
+function openNextSearch() {
+  const nextUrl = launchQueue.shift();
+  if (!nextUrl) {
+    updateQueueStatus(true);
+    return;
+  }
+  const opened = Boolean(openSearchUrl(nextUrl));
+  updateQueueStatus(opened);
 }
 
 function launchSearches() {
@@ -577,34 +624,17 @@ function launchSearches() {
   const jobTitles = searches.map(search => search.originalTitle);
   updateUrl(jobTitles);
   renderSuggestions(jobTitles);
-  const totalLinks = searches.reduce((sum, search) => sum + search.context.targets.length, 0);
-  if (!totalLinks) {
+  const urls = getSearchUrls(searches);
+  if (!urls.length) {
     els.searchStatus.textContent = "Select at least one job board.";
+    els.queueActions.hidden = true;
     return;
   }
 
-  const urls = [];
-  searches.forEach(search => {
-    search.context.targets.forEach(([site]) => {
-      urls.push(targetUrl(site, search.title, search.context));
-    });
-  });
-
-  const tabs = urls.map(() => window.open("about:blank", "_blank"));
-  let opened = 0;
-  tabs.forEach((tab, index) => {
-    if (!tab) return;
-    opened += 1;
-    tab.opener = null;
-    if (tab.location && typeof tab.location.replace === "function") {
-      tab.location.replace(urls[index]);
-    } else {
-      tab.location = urls[index];
-    }
-  });
-  els.searchStatus.textContent = opened === totalLinks
-    ? `Opened ${opened} search tabs.`
-    : `Tried to open ${totalLinks} search tabs. Allow popups if some did not open.`;
+  launchTotal = urls.length;
+  launchQueue = urls.slice(1);
+  const opened = Boolean(openSearchUrl(urls[0]));
+  updateQueueStatus(opened);
 }
 
 function toggleAdvanced(forceOpen) {
@@ -672,6 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
   hydrateFromUrl();
 
   els.startButton.addEventListener("click", launchSearches);
+  els.openNextButton.addEventListener("click", openNextSearch);
   els.jobTitle.addEventListener("keydown", event => {
     if (event.key === "Enter") launchSearches();
   });
